@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+.DS_Store
+
+# User data
+.vscode/
+data/*
+!data/.gitkeep
+*.sqlite3
