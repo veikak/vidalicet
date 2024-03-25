@@ -1,1 +1,1 @@
-from . import connection, matching
+from . import child_blocks, connection, matching

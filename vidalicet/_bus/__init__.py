@@ -1,1 +1,1 @@
-from . import matching
+from . import child_blocks, matching

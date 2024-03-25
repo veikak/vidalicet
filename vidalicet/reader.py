@@ -28,8 +28,9 @@ class Reader:
     _parser: Parser
     _ecu_identifiers: Set[str]
     _param_messages_raw: List[_log_parsing.params.RawParamRxMsg]
-    _db: sqlite3.Connection
-    _message_matcher: _bus.matching.MessageMatcher
+    _con: sqlite3.Connection
+    _message_matcher: _bus.matching.MessageMatcher | None
+    _block_extractor: _bus.child_blocks.BlockExtractor | None
 
     last_ingestion_stats: IngestionStats | None
     log_files_ingested: List[str]
@@ -39,8 +40,9 @@ class Reader:
         self._parser = self._create_parser()
         self._ecu_identifiers = set()
         self._param_messages_raw = []
-        self._db = _db.connection.connect(db_path)
+        self._con = _db.connection.connect(db_path)
         self._message_matcher = None
+        self._block_extractor = None
 
         self.last_ingestion_stats = None
         self.log_files_ingested = 0
@@ -104,9 +106,12 @@ class Reader:
         ## Parameter read phase
 
         logger.info("Reading parameter match data from db")
-        match_data = _db.matching.get_parent_match_data(self._db, self._ecu_identifiers)
+        match_data = _db.matching.get_parent_match_data(
+            self._con, self._ecu_identifiers
+        )
         logger.info("Preprocessing parameter match data")
         self._message_matcher = _bus.matching.MessageMatcher(match_data)
+        self._block_extractor = _bus.child_blocks.BlockExtractor(self._con)
 
         logger.debug("Entering parameter read phase")
         param_parser = _log_parsing.params.parser()
@@ -152,19 +157,13 @@ class Reader:
 
         return status
 
-    def get_new_params(self):
+    def get_new_params(self) -> list[_bus.child_blocks.ConvertedReading]:
         if not self._message_matcher:
-            return
+            return []
 
         logger.info(f"Iterating {len(self._param_messages_raw)} params.")
 
-        # Copy messages to deque and clear message list.
-        # This allows the iteration to be unaffected by new messages, in case new log files
-        # are ingested between pausing and continuing the iteration.
-        current_msgs = deque(self._param_messages_raw)
+        readings = self._message_matcher.match(self._param_messages_raw)
+        converted_readings = self._block_extractor.extract_children(readings)
         self._param_messages_raw.clear()
-
-        while current_msgs:
-            reading = self._message_matcher.match(current_msgs.popleft())
-            if reading is not None:
-                yield reading
+        return converted_readings

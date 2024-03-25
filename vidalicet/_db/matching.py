@@ -8,6 +8,7 @@ from . import _common
 @dataclasses.dataclass
 class DbParentBlockMatchData:
     block_id: int
+    ecu_variant_id: int
     can_id_rx: str
     compare_value: str
 
@@ -30,6 +31,7 @@ def get_parent_match_data(
         f"""
         SELECT DISTINCT
             blocks_p.id as block_id
+            , ecu_blocks.ecu_variant_id
             , ecus.can_id_rx
             , block_values_p.compare_value
         FROM ecu_variants ecus

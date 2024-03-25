@@ -24,4 +24,5 @@ for path in log_paths:
     logger.info(f"Last timestamp: {reader.last_timestamp}")
     logger.info(f"Params: {len(reader._param_messages_raw)}")
 
-params = list(reader.get_new_params())
+params = reader.get_new_params()
+logger.info(params[:5])
