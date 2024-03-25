@@ -182,9 +182,13 @@ def create_block_values(con: sqlite3.Connection, dump: TextIO):
             ppe_text_id INTEGER REFERENCES texts(id) NOT NULL,
             ppe_unit_text_id INTEGER REFERENCES texts(id) NOT NULL,
             sort_order INTEGER NOT NULL
-            --UNIQUE (block_id, compare_value, ppe_scaling_id)
         )
         STRICT
+        """
+    )
+    con.execute(
+        """
+        CREATE INDEX block_values_block_id ON block_values (block_id)
         """
     )
     con.commit()
