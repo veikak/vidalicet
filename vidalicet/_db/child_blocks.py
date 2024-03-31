@@ -42,7 +42,7 @@ def get_child_block_specs(
         INNER JOIN scalings
             ON scalings.id = block_values.scaling_id
         INNER JOIN scalings scalings_ppe
-            ON scalings.id = block_values.ppe_scaling_id
+            ON scalings_ppe.id = block_values.ppe_scaling_id
         WHERE
             ecu_blocks.ecu_variant_id = :ecu_variant_id
             AND ecu_blocks.parent_block_id = :parent_block_id
