@@ -25,4 +25,5 @@ for path in log_paths:
     logger.info(f"Params: {len(reader._param_messages_raw)}")
 
 params = reader.get_new_params()
+logger.info(f"Converted {len(params)} readings.")
 logger.info(params[:5])
