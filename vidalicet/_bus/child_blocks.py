@@ -115,32 +115,42 @@ class BlockExtractor:
         ## Convert
         result = []
         for eb_id, readings in groups:
-            for spec in self._data[eb_id]:
-                if spec.length % 8 != 0:
+            child_specs = self._data.get(eb_id, None)
+            if not child_specs:
+                continue
+            if len(child_specs) != 1:
+                # TODO: Multi-child blocks
+                continue
+
+            spec = child_specs[0]
+            if spec.length % 8 != 0:
+                continue
+
+            length_nibbles = spec.length // 4
+            offset_nibbles = spec.offset // 4
+            unpack_info = _get_unpack_info(spec.data_type, length_nibbles // 2)
+            if not unpack_info:
+                continue
+
+            hex_values = [
+                r.payload[offset_nibbles : offset_nibbles + length_nibbles]
+                for r in readings
+            ]
+            unpack_format, padding = unpack_info
+            converted_values = _from_hex(
+                values=hex_values,
+                unpack_format=unpack_format,
+                padding=padding,
+            )
+            assert len(hex_values) == len(converted_values)
+
+            for r, converted_value in zip(readings, converted_values):
+                if converted_value is None:
                     continue
-                length_nibbles = spec.length // 4
-                offset_nibbles = spec.offset // 4
-                unpack_info = _get_unpack_info(spec.data_type, length_nibbles // 2)
-                if not unpack_info:
-                    continue
-                hex_values = [
-                    r.payload[offset_nibbles : offset_nibbles + length_nibbles]
-                    for r in readings
-                ]
-                unpack_format, padding = unpack_info
-                converted_values = _from_hex(
-                    values=hex_values,
-                    unpack_format=unpack_format,
-                    padding=padding,
-                )
-                assert len(hex_values) == len(converted_values)
-                for r, converted_value in zip(readings, converted_values):
-                    if converted_value is None:
-                        continue
-                    result.append(
-                        ConvertedReading(
-                            block_id=spec.id, time=r.time, value=converted_value
-                        )
+                result.append(
+                    ConvertedReading(
+                        block_id=spec.id, time=r.time, value=converted_value
                     )
+                )
 
         return result
