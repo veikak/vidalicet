@@ -108,6 +108,8 @@ class BlockExtractor:
         for eb_id, _ in groups:
             if eb_id not in self._data:
                 child_specs = self._fetch_child_specs(eb_id)
+                if len(child_specs) == 0:
+                    continue
                 self._data[eb_id] = child_specs
 
         ## Convert
