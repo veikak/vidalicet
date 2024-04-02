@@ -5,7 +5,7 @@ import dataclasses
 from . import _common
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class DbParentBlockMatchData:
     block_id: int
     ecu_variant_id: int

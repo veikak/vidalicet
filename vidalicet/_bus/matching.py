@@ -8,7 +8,7 @@ from .. import _db, _log_parsing
 MSG_TYPE_LEN = 2
 
 
-@dataclass
+@dataclass(frozen=True)
 class _EcuBlockIdByCompVal:
     comp_val_len: int
     data: dict[str, EcuBlockId]

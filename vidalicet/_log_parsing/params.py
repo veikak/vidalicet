@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from . import common
 
 
-@dataclass
+@dataclass(frozen=True)
 class RawParamRxMsg:
     ecu_addr: str
     message: str

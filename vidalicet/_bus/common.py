@@ -8,14 +8,14 @@ class EcuBlockId:
     parent_block_id: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParameterReading:
     id: EcuBlockId
     payload: str
     time: time
 
 
-@dataclass
+@dataclass(frozen=True)
 class ChildReading:
     block_id: int
     time: time

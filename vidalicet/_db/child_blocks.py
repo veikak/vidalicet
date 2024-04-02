@@ -5,7 +5,7 @@ import dataclasses
 from . import _common
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class DbChildBlockSpec:
     id: int
     length: int

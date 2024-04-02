@@ -3,7 +3,7 @@ from datetime import time
 import re
 
 
-@dataclass
+@dataclass(frozen=True)
 class LogEntry:
     time: time
     message: str
