@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Iterable
 import sqlite3
 import struct
 from itertools import groupby
@@ -48,7 +48,7 @@ def _get_unpack_info(data_type: str, len_bytes: int) -> tuple[str, int] | None:
 
 
 def _from_hex(
-    values: Sequence[str], unpack_format: str, padding: int
+    values: Iterable[str], unpack_format: str, padding: int
 ) -> list[int] | list[float]:
     padding_str = "00" * padding
     values_bytes = bytes.fromhex(padding_str + padding_str.join(values))
@@ -75,7 +75,7 @@ class BlockExtractor:
         )
 
     def extract_children(
-        self, readings: Sequence[matching.ParameterReading]
+        self, readings: Iterable[matching.ParameterReading]
     ) -> list[ChildReading]:
 
         ## Group by parent
@@ -94,7 +94,7 @@ class BlockExtractor:
                 self._data[eb_id] = child_specs
 
         ## Convert
-        result = []
+        result: list[ChildReading] = []
         for eb_id, readings in groups:
             child_specs = self._data.get(eb_id, None)
             if not child_specs:
@@ -126,8 +126,6 @@ class BlockExtractor:
             assert len(hex_values) == len(converted_values)
 
             for r, converted_value in zip(readings, converted_values):
-                if converted_value is None:
-                    continue
                 result.append(
                     ChildReading(block_id=spec.id, time=r.time, value=converted_value)
                 )

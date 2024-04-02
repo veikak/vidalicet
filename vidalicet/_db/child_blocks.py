@@ -1,4 +1,3 @@
-from typing import Sequence, List, Protocol, ClassVar, Any
 from sqlite3 import Connection
 import dataclasses
 
@@ -20,7 +19,7 @@ _db_child_block_spec_factory = _common.create_dataclass_row_factory(DbChildBlock
 
 def get_child_block_specs(
     con: Connection, ecu_variant_id: int, parent_block_id: int
-) -> List[DbChildBlockSpec]:
+) -> list[DbChildBlockSpec]:
     cur = con.cursor()
     cur.row_factory = _db_child_block_spec_factory
     return cur.execute(

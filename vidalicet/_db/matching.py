@@ -1,4 +1,4 @@
-from typing import Sequence, List, Protocol, ClassVar, Any
+from typing import Iterable, List
 from sqlite3 import Connection
 import dataclasses
 
@@ -19,12 +19,16 @@ _db_parent_block_match_data_factory = _common.create_dataclass_row_factory(
 
 
 def get_parent_match_data(
-    con: Connection, ecu_identifiers: Sequence[str]
+    con: Connection, ecu_identifiers: Iterable[str]
 ) -> List[DbParentBlockMatchData]:
-    if len(ecu_identifiers) == 0:
+    ecu_identifiers_tuple = tuple(ecu_identifiers)
+
+    if len(ecu_identifiers_tuple) == 0:
         return []
 
-    ecu_identifier_placeholders = ", ".join(("?" for _ in range(len(ecu_identifiers))))
+    ecu_identifier_placeholders = ", ".join(
+        ("?" for _ in range(len(ecu_identifiers_tuple)))
+    )
     cur = con.cursor()
     cur.row_factory = _db_parent_block_match_data_factory
     return cur.execute(
@@ -43,5 +47,5 @@ def get_parent_match_data(
             ON block_values_p.block_id = blocks_p.id
         WHERE ecus.identifier IN ({ecu_identifier_placeholders})
         """,
-        tuple(ecu_identifiers),
+        ecu_identifiers_tuple,
     ).fetchall()

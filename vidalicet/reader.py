@@ -1,4 +1,4 @@
-from typing import assert_never, Generator, List, Literal, Set, TextIO
+from typing import Generator, List, Literal, Set, TextIO
 import logging
 from dataclasses import dataclass
 from datetime import time
@@ -32,7 +32,7 @@ class Reader:
     _block_extractor: _bus.child_blocks.BlockExtractor | None
 
     last_ingestion_stats: IngestionStats | None
-    log_files_ingested: List[str]
+    log_files_ingested: int
     last_timestamp: time | None
 
     def __init__(self, db_path: str) -> None:
@@ -47,7 +47,7 @@ class Reader:
         self.log_files_ingested = 0
         self.last_timestamp = None
 
-        self._parser.send(None)
+        next(self._parser)
 
     def _assert_after_last_timestamp(self, timestamp: time, context: object) -> None:
         new, prev = timestamp, self.last_timestamp
@@ -68,6 +68,7 @@ class Reader:
             return
 
         self._ecu_identifiers.add(ecu_identifier)
+        assert self.last_ingestion_stats is not None
         self.last_ingestion_stats.ecu_count += 1
         self.last_timestamp = timestamp
 
@@ -75,6 +76,7 @@ class Reader:
         self._assert_after_last_timestamp(message.time, message)
 
         self._param_messages_raw.append(message)
+        assert self.last_ingestion_stats is not None
         self.last_ingestion_stats.param_count += 1
         self.last_timestamp = message.time
 
@@ -86,7 +88,7 @@ class Reader:
         logger.debug("Entering ECU identification phase")
 
         ecu_parser = _log_parsing.ecu_id.parser()
-        ecu_parser.send(None)
+        next(ecu_parser)
         ecu_parser.send(f)
 
         for response in ecu_parser:
@@ -114,7 +116,7 @@ class Reader:
 
         logger.debug("Entering parameter read phase")
         param_parser = _log_parsing.params.parser()
-        param_parser.send(None)
+        next(param_parser)
         param_parser.send(f)
 
         for message in param_parser:
@@ -150,14 +152,12 @@ class Reader:
                 pass
             case "parameters":
                 pass
-            case _:
-                assert_never(status)
         logger.info(f"Ingestion of log file #{file_i} completed: '{path}'")
 
         return status
 
     def get_new_params(self) -> list[_bus.common.ChildReading]:
-        if not self._message_matcher:
+        if not self._message_matcher or not self._block_extractor:
             return []
 
         logger.info(f"Iterating {len(self._param_messages_raw)} params.")

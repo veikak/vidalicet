@@ -1,4 +1,4 @@
-from typing import Any, Generator, Sequence, TextIO, Literal, NoReturn
+from typing import Generator, TextIO, NoReturn
 import re
 from datetime import time
 from dataclasses import dataclass
@@ -98,7 +98,7 @@ def parser() -> Generator[RawParamRxMsg | None, TextIO, NoReturn]:
             # Start line found: descent
 
             group_parser = _message_group_parser(ecu_addr)
-            group_parser.send(None)
+            next(group_parser)
             group_parser.send(f)
             group_parser_f = yield from group_parser
 

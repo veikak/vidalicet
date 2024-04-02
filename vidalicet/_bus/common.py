@@ -12,11 +12,11 @@ class EcuBlockId:
 class ParameterReading:
     id: EcuBlockId
     payload: str
-    time: time
+    time: type[time]
 
 
 @dataclass(frozen=True)
 class ChildReading:
     block_id: int
-    time: time
+    time: type[time]
     value: int | float

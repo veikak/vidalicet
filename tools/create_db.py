@@ -348,7 +348,7 @@ def main():
     arg_parser.add_argument("dump_dir", help="path to directory containing .csv files")
     args = arg_parser.parse_args()
 
-    con = sqlite3.connect("vidalicet.sqlite3", autocommit=False)
+    con = sqlite3.connect("vidalicet.sqlite3", isolation_level="EXCLUSIVE")
 
     with open_dump_files(args.dump_dir) as dump_files:
         for name, creator_func in creator_funcs:

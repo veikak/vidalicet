@@ -22,7 +22,7 @@ reader = vidalicet.reader.Reader("vidalicet.sqlite3")
 for path in log_paths:
     reader.ingest_logfile(path)
     logger.info(f"Last timestamp: {reader.last_timestamp}")
-    logger.info(f"Params: {len(reader._param_messages_raw)}")
+    logger.info(f"Params: {len(reader._param_messages_raw)}")  # type: ignore
 
 params = reader.get_new_params()
 logger.info(f"Converted {len(params)} readings.")
