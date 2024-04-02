@@ -1,0 +1,31 @@
+?start: expression
+
+?expression: term
+    | expression "+" term -> add
+    | expression "-" term -> sub
+
+?term: atom
+    | term "*" atom -> mul
+    | term "/" atom -> div
+    | term "&" atom -> band
+
+?atom: "-" atom -> neg
+    | INT
+    | FLOAT
+    | HEX
+    | BITS
+    | CNAME
+    | CNAME "(" expression ")" -> call
+    | "(" expression ")"
+
+HEX_BYTE: HEXDIGIT HEXDIGIT
+HEX: "0x" HEX_BYTE+
+BIT_BYTE: /[0..1]{8}/
+BITS: "0b" BIT_BYTE+
+
+%import common.INT
+%import common.FLOAT
+%import common.HEXDIGIT
+%import common.CNAME
+%import common.WS_INLINE
+%ignore WS_INLINE
