@@ -1,32 +1,15 @@
 from typing import Sequence
 import sqlite3
 import struct
-from dataclasses import dataclass
-from datetime import time
 from itertools import groupby
 import math
 
+from .common import ChildReading, EcuBlockId, ParameterReading
 from . import matching
 from .. import _db
 
-type ParentId = int
-type ChildId = int
 
-
-@dataclass(frozen=True, order=True)
-class EcuBlockId:
-    ecu_variant_id: int
-    parent_block_id: int
-
-
-@dataclass
-class ConvertedReading:
-    block_id: int
-    time: time
-    value: int | float
-
-
-def next_pow2(val: int):
+def _next_pow2(val: int):
     a = int(math.log2(val))
     if 2**a == val:
         return val
@@ -47,7 +30,7 @@ def _get_unpack_info(data_type: str, len_bytes: int) -> tuple[str, int] | None:
                 case _:
                     return None
         case "Unsigned":
-            padded_len = next_pow2(len_bytes)
+            padded_len = _next_pow2(len_bytes)
             padding = padded_len - len_bytes
             match padded_len:
                 case 1:
@@ -72,10 +55,8 @@ def _from_hex(
     return [x for (x,) in struct.iter_unpack(unpack_format, values_bytes)]
 
 
-def _reading_to_ecu_block_id(r: matching.ParameterReading) -> EcuBlockId:
-    return EcuBlockId(
-        ecu_variant_id=r.ecu_variant_id, parent_block_id=r.parent_block_id
-    )
+def _reading_id(r: ParameterReading) -> EcuBlockId:
+    return r.id
 
 
 class BlockExtractor:
@@ -95,13 +76,13 @@ class BlockExtractor:
 
     def extract_children(
         self, readings: Sequence[matching.ParameterReading]
-    ) -> list[ConvertedReading]:
+    ) -> list[ChildReading]:
 
         ## Group by parent
-        sorted_readings = sorted(readings, key=_reading_to_ecu_block_id)
+        sorted_readings = sorted(readings, key=_reading_id)
         groups = [
             (eb_id, list(readings))
-            for eb_id, readings in groupby(sorted_readings, _reading_to_ecu_block_id)
+            for eb_id, readings in groupby(sorted_readings, key=_reading_id)
         ]
 
         ## Fill in any missing child specs
@@ -148,9 +129,7 @@ class BlockExtractor:
                 if converted_value is None:
                     continue
                 result.append(
-                    ConvertedReading(
-                        block_id=spec.id, time=r.time, value=converted_value
-                    )
+                    ChildReading(block_id=spec.id, time=r.time, value=converted_value)
                 )
 
         return result

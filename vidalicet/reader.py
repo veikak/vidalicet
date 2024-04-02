@@ -3,7 +3,6 @@ import logging
 from dataclasses import dataclass
 from datetime import time
 import sqlite3
-from collections import deque
 
 from . import _db, _log_parsing, _bus
 
@@ -157,7 +156,7 @@ class Reader:
 
         return status
 
-    def get_new_params(self) -> list[_bus.child_blocks.ConvertedReading]:
+    def get_new_params(self) -> list[_bus.common.ChildReading]:
         if not self._message_matcher:
             return []
 

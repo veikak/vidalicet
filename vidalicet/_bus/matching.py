@@ -2,36 +2,23 @@ from typing import Sequence
 from dataclasses import dataclass
 from datetime import time
 
+from .common import EcuBlockId, ParameterReading
 from .. import _db, _log_parsing
 
 MSG_TYPE_LEN = 2
 
 
 @dataclass
-class _IdPair:
-    parent_block_id: int
-    ecu_variant_id: int
-
-
-@dataclass
-class _IdPairByCompVal:
+class _EcuBlockIdByCompVal:
     comp_val_len: int
-    data: dict[str, _IdPair]
+    data: dict[str, EcuBlockId]
 
 
-type _IdPairByCompValByCanAddr = dict[str, _IdPairByCompVal]
-
-
-@dataclass
-class ParameterReading:
-    parent_block_id: int
-    ecu_variant_id: int
-    payload: str
-    time: time
+type _EcuBlockIdByCompValByCanAddr = dict[str, _EcuBlockIdByCompVal]
 
 
 class MessageMatcher:
-    _data: _IdPairByCompValByCanAddr
+    _data: _EcuBlockIdByCompValByCanAddr
 
     def __init__(self, match_datas: Sequence[_db.matching.DbParentBlockMatchData]):
         self._data = {}
@@ -47,7 +34,7 @@ class MessageMatcher:
 
             if d.can_id_rx not in self._data:
                 # New CAN id: initialize mapping
-                self._data[d.can_id_rx] = _IdPairByCompVal(
+                self._data[d.can_id_rx] = _EcuBlockIdByCompVal(
                     comp_val_len=len(comp_val), data={}
                 )
             else:
@@ -57,7 +44,7 @@ class MessageMatcher:
             # There should be no duplicate compare values
             assert comp_val not in self._data[d.can_id_rx].data
 
-            self._data[d.can_id_rx].data[comp_val] = _IdPair(
+            self._data[d.can_id_rx].data[comp_val] = EcuBlockId(
                 parent_block_id=d.block_id, ecu_variant_id=d.ecu_variant_id
             )
 
@@ -73,15 +60,14 @@ class MessageMatcher:
             # First MSG_TYPE_LEN chars: message type (ignored)
             # Next comp_val_len chars: parameter address (should match compare value)
             # Rest: payload
-            matched_id_pair = comp_data.get(
+            matched_id = comp_data.get(
                 message.message[MSG_TYPE_LEN : MSG_TYPE_LEN + comp_val_len], None
             )
-            if matched_id_pair is None:
+            if matched_id is None:
                 continue
 
             yield ParameterReading(
-                parent_block_id=matched_id_pair.parent_block_id,
-                ecu_variant_id=matched_id_pair.ecu_variant_id,
+                id=matched_id,
                 payload=message.message[MSG_TYPE_LEN + comp_val_len :],
                 time=time,
             )
