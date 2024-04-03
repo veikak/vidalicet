@@ -314,6 +314,23 @@ def create_ecu_variant_block_trees(con: sqlite3.Connection, dump: TextIO):
         reader,
     )
     con.commit()
+    con.execute(
+        """
+        DELETE FROM ecu_variant_block_trees
+        WHERE rowid IN (
+            SELECT DISTINCT block_trees.rowid
+            FROM ecu_variant_block_trees block_trees
+            LEFT JOIN ecu_variants ON ecu_variants.id = block_trees.ecu_variant_id
+            LEFT JOIN blocks parent_blocks ON parent_blocks.id = block_trees.parent_block_id
+            LEFT JOIN blocks child_blocks ON child_blocks.id = block_trees.child_block_id
+            WHERE
+                ecu_variants.id IS NULL
+                OR parent_blocks.id IS NULL
+                OR child_blocks.id IS NULL
+        )
+        """
+    )
+    con.commit()
 
 
 creator_funcs = (
