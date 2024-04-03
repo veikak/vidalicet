@@ -5,7 +5,7 @@ from itertools import groupby
 import math
 
 from .common import ChildReading, EcuBlockId, ParameterReading
-from . import matching
+from . import _scaling, matching
 from .. import _db
 
 
@@ -62,10 +62,12 @@ def _reading_id(r: ParameterReading) -> EcuBlockId:
 class BlockExtractor:
     _con: sqlite3.Connection
     _data: dict[EcuBlockId, list[_db.child_blocks.DbChildBlockSpec]]
+    _scaling_parser: _scaling.ScalingParser
 
     def __init__(self, con: sqlite3.Connection) -> None:
         self._con = con
         self._data = {}
+        self._scaling_parser = _scaling.ScalingParser()
 
     def _fetch_child_specs(self, eb_id: EcuBlockId):
         return _db.child_blocks.get_child_block_specs(
@@ -126,8 +128,11 @@ class BlockExtractor:
             assert len(hex_values) == len(converted_values)
 
             for r, converted_value in zip(readings, converted_values):
+                scaled_value = self._scaling_parser.evaluate(
+                    spec.scaling, converted_value
+                )
                 result.append(
-                    ChildReading(block_id=spec.id, time=r.time, value=converted_value)
+                    ChildReading(block_id=spec.id, time=r.time, value=scaled_value)
                 )
 
         return result
