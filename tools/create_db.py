@@ -347,10 +347,21 @@ creator_funcs = (
 
 def init(con: sqlite3.Connection):
     con.execute("""PRAGMA journal_mode = WAL""")
+    # Disable foreign key enforcement temporarily (block tree dump can contain extra data)
+    con.execute("""PRAGMA foreign_keys = false""")
     con.commit()
 
 
 def clean_up(con: sqlite3.Connection):
+    # Enable foreign key enforcement again
+    con.execute("""PRAGMA foreign_keys = true""")
+    con.commit()
+
+    # Check integrity
+    check_result = con.execute("""PRAGMA foreign_key_check""").fetchall()
+    con.commit()
+    assert len(check_result) == 0, check_result
+
     con.execute("""VACUUM""")
     con.commit()
 
