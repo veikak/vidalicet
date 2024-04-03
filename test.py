@@ -17,7 +17,7 @@ log_filenames = [
 ]
 log_paths = [os.path.join(log_dir, filename) for filename in log_filenames]
 
-reader = vidalicet.reader.Reader("vidalicet.sqlite3")
+reader = vidalicet.reader.Reader()
 
 for path in log_paths:
     reader.ingest_logfile(path)

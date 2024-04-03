@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import time
 import sqlite3
 
-from . import _db, _log_parsing, _bus
+from . import _bus, _db, _log_parsing, constants
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class Reader:
     log_files_ingested: int
     last_timestamp: time | None
 
-    def __init__(self, db_path: str) -> None:
+    def __init__(self, db_path: str = constants.DEFAULT_DB_PATH) -> None:
         self._parser = self._create_parser()
         self._ecu_identifiers = set()
         self._param_messages_raw = []
