@@ -326,6 +326,11 @@ creator_funcs = (
 )
 
 
+def clean_up(con: sqlite3.Connection):
+    con.execute("""VACUUM""")
+    con.commit()
+
+
 @contextlib.contextmanager
 def open_dump_files(dump_dir: str):
     files = {
@@ -355,7 +360,7 @@ def main():
             logger.info(f"Creating table '{name}'...")
             creator_func(con, dump_files[name])
 
-    con.commit()
+    clean_up(con)
     con.close()
 
 
