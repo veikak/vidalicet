@@ -328,6 +328,11 @@ creator_funcs = (
 )
 
 
+def init(con: sqlite3.Connection):
+    con.execute("""PRAGMA journal_mode = WAL""")
+    con.commit()
+
+
 def clean_up(con: sqlite3.Connection):
     con.execute("""VACUUM""")
     con.commit()
@@ -356,6 +361,7 @@ def main():
     args = arg_parser.parse_args()
 
     con = _db.connection.connect(constants.DEFAULT_DB_PATH)
+    init(con)
 
     with open_dump_files(args.dump_dir) as dump_files:
         for name, creator_func in creator_funcs:
