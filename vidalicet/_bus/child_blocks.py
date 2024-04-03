@@ -126,11 +126,10 @@ class BlockExtractor:
                 padding=padding,
             )
             assert len(hex_values) == len(converted_values)
+            parsed_scaling = self._scaling_parser.parse(spec.scaling)
 
             for r, converted_value in zip(readings, converted_values):
-                scaled_value = self._scaling_parser.evaluate(
-                    spec.scaling, converted_value
-                )
+                scaled_value = _scaling.evaluate(tree=parsed_scaling, x=converted_value)
                 result.append(
                     ChildReading(block_id=spec.id, time=r.time, value=scaled_value)
                 )

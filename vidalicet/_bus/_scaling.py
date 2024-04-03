@@ -1,7 +1,7 @@
 from typing import Any, TypeGuard
 import os
 from numbers import Real
-from lark import Lark, Token, Transformer
+from lark import Lark, ParseTree, Token, Transformer
 import math
 
 
@@ -81,6 +81,11 @@ class _ScalingTransformer(Transformer[Any, Any]):
         return l_int & r_int
 
 
+def evaluate(tree: ParseTree, x: int | float) -> int | float:
+    transformer = _ScalingTransformer(x)
+    return transformer.transform(tree)
+
+
 class ScalingParser:
     _parser: Lark
 
@@ -93,6 +98,5 @@ class ScalingParser:
                 parser="lalr",
             )
 
-    def evaluate(self, expression: str, x: int | float) -> int | float:
-        transformer = _ScalingTransformer(x)
-        return transformer.transform(self._parser.parse(expression))
+    def parse(self, expression: str) -> ParseTree:
+        return self._parser.parse(expression)
