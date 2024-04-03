@@ -3,6 +3,7 @@ import os
 from numbers import Real
 from lark import Lark, ParseTree, Token, Transformer
 import math
+from functools import cache
 
 
 def _is_real(*values: object) -> TypeGuard[Real]:
@@ -81,6 +82,7 @@ class _ScalingTransformer(Transformer[Any, Any]):
         return l_int & r_int
 
 
+@cache
 def evaluate(tree: ParseTree, x: int | float) -> int | float:
     transformer = _ScalingTransformer(x)
     return transformer.transform(tree)
@@ -96,6 +98,7 @@ class ScalingParser:
                 f,
                 start="start",
                 parser="lalr",
+                cache=True,
             )
 
     def parse(self, expression: str) -> ParseTree:
