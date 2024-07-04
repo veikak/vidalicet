@@ -4,7 +4,7 @@ import struct
 from itertools import groupby
 import math
 
-from .common import ChildReading, EcuBlockId, ParameterReading
+from .common import EcuBlockId, ParameterReadings, RawReading, Reading
 from . import _scaling, matching
 from .. import _db
 
@@ -55,7 +55,7 @@ def _from_hex(
     return [x for (x,) in struct.iter_unpack(unpack_format, values_bytes)]
 
 
-def _reading_id(r: ParameterReading) -> EcuBlockId:
+def _reading_id(r: RawReading) -> EcuBlockId:
     return r.id
 
 
@@ -77,8 +77,8 @@ class BlockExtractor:
         )
 
     def extract_children(
-        self, readings: Iterable[matching.ParameterReading]
-    ) -> list[ChildReading]:
+        self, readings: Iterable[matching.RawReading]
+    ) -> list[ParameterReadings]:
 
         ## Group by parent
         sorted_readings = sorted(readings, key=_reading_id)
@@ -96,7 +96,7 @@ class BlockExtractor:
                 self._data[eb_id] = child_specs
 
         ## Convert
-        result: list[ChildReading] = []
+        result: list[ParameterReadings] = []
         for eb_id, readings in groups:
             child_specs = self._data.get(eb_id, None)
             if not child_specs:
@@ -126,12 +126,20 @@ class BlockExtractor:
                 padding=padding,
             )
             assert len(hex_values) == len(converted_values)
-            parsed_scaling = self._scaling_parser.parse(spec.scaling)
+            parsed_scaling = self._scaling_parser.parse(spec.ppe_scaling)
+            parameter_readings = ParameterReadings(
+                block_id=spec.id,
+                # parent_text=spec.parent_text,
+                name=spec.name,
+                text=spec.text,
+                ppe_text=spec.ppe_text,
+                ppe_unit_text=spec.ppe_unit_text,
+                data=[],
+            )
+            result.append(parameter_readings)
 
             for r, converted_value in zip(readings, converted_values):
                 scaled_value = _scaling.evaluate(tree=parsed_scaling, x=converted_value)
-                result.append(
-                    ChildReading(block_id=spec.id, time=r.time, value=scaled_value)
-                )
+                parameter_readings.data.append(Reading(time=r.time, value=scaled_value))
 
         return result

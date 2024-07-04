@@ -156,7 +156,7 @@ class Reader:
 
         return status
 
-    def get_new_params(self) -> list[_bus.common.ChildReading]:
+    def get_new_params(self) -> list[_bus.common.ParameterReadings]:
         if not self._message_matcher or not self._block_extractor:
             return []
 

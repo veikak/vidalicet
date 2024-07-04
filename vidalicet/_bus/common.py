@@ -9,14 +9,24 @@ class EcuBlockId:
 
 
 @dataclass(frozen=True)
-class ParameterReading:
+class RawReading:
     id: EcuBlockId
     payload: str
-    time: type[time]
+    time: time
 
 
 @dataclass(frozen=True)
-class ChildReading:
-    block_id: int
-    time: type[time]
+class Reading:
+    time: time
     value: int | float
+
+
+@dataclass(frozen=True)
+class ParameterReadings:
+    block_id: int
+    # parent_text: str
+    name: str
+    text: str
+    ppe_text: str
+    ppe_unit_text: str
+    data: list[Reading]

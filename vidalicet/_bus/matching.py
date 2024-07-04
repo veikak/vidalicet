@@ -2,7 +2,7 @@ from typing import Sequence
 from dataclasses import dataclass
 from datetime import time
 
-from .common import EcuBlockId, ParameterReading
+from .common import EcuBlockId, RawReading
 from .. import _db, _log_parsing
 
 MSG_TYPE_LEN = 2
@@ -66,8 +66,8 @@ class MessageMatcher:
             if matched_id is None:
                 continue
 
-            yield ParameterReading(
+            yield RawReading(
                 id=matched_id,
                 payload=message.message[MSG_TYPE_LEN + comp_val_len :],
-                time=time,
+                time=message.time,
             )
