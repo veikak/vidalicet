@@ -9,7 +9,7 @@
     | term "/" atom -> div
     | term "&" atom -> band
 
-?atom: "-" atom -> neg
+atom: "-" atom -> neg
     | INT
     | FLOAT
     | HEX

@@ -35,6 +35,10 @@ class _ScalingTransformer(Transformer[Any, Any]):
             return self.x
         return token.value
 
+    def atom(self, tokens: list[Any]):
+        assert len(tokens) == 1
+        return tokens[0]
+
     def call(self, tokens: list[str | int | float]):
         fn_name, arg = tokens
         assert _is_real(arg)
