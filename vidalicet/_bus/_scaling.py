@@ -102,6 +102,7 @@ class ScalingParser:
                 f,
                 start="start",
                 parser="lalr",
+                lexer="contextual",
                 cache=True,
             )
 
