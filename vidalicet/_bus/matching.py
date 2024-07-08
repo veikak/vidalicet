@@ -1,6 +1,5 @@
 from typing import Sequence
 from dataclasses import dataclass
-from datetime import time
 
 from .common import EcuBlockId, RawReading
 from .. import _db, _log_parsing
