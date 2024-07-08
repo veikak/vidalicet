@@ -2,6 +2,8 @@
 
 The missing parameter export functionality for Volvo VIDA 2014D: A Python library that turns VIDA's raw logs into usable data with proper naming and scaling.
 
+![Example plot](assets/plot.png)
+
 > [!NOTE]
 > This is an unfinished hobby project that's been tested with just one car. Some of the more complex parameter types (e.g. categorical values) won't work, and there can be mistakes. Please don't trust the output of this library without cross-referencing with VIDA.
 
