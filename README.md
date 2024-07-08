@@ -96,3 +96,7 @@ params = reader.get_new_params()
 ```
 
 See [examples/boost_pressure.ipynb](boost_pressure.ipynb) for a more comprehensive example that covers plotting etc.
+
+## License
+
+[MIT](LICENSE)
