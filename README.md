@@ -95,7 +95,7 @@ for path in log_paths:
 params = reader.get_new_params()
 ```
 
-See [examples/boost_pressure.ipynb](boost_pressure.ipynb) for a more comprehensive example that covers plotting etc.
+See [examples/boost_pressure.ipynb](examples/boost_pressure.ipynb) for a more comprehensive example that covers plotting etc.
 
 ## License
 
